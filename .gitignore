@@ -1,0 +1,10 @@
+#files
+*.o
+*.mod
+*.nc
+prog
+#directories
+backup/
+input/
+output/
+.git/
