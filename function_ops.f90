@@ -133,24 +133,24 @@ CONTAINS
     local_count = (n(1)/2+1)*n(2)*local_N
     
     
-    if (rank == 0) print *, path
+    if (rank == 0) print*, achar(9), path
 
     if (rank == 0) then
-      
        allocate(global_cx(1:n(1)/2+1, 1:n(2), 1:n(3)))
-       print *, "allocation OK!"
+       print *, achar(9), "allocation OK!"
        open(filehandle, file=path, iostat=ios)
        INQUIRE( UNIT=filehandle, OPENED=openedOk ) 
-       IF ( openedOk ) print*, "file opened ok"
+       IF ( openedOk ) print*, achar(9), "file opened ok"
        if(ios /= 0) then
-         print*, "error opening file"
+         print*, achar(9), "error opening file"
          errorIndicator = .true.
        end if
     end if
     allocate( temp1_function_cx(1:n(1), 1:n(2), 1:local_N) )
     
-    if(rank==0) print*, "lines in file", 3*n_pre(3)*n_pre(2)*(n_pre(1)/2+1)
+    if(rank==0) print*, achar(9), "lines in file", 3*n_pre(3)*n_pre(2)*(n_pre(1)/2+1)
     do nn = 1,3
+      if(rank==0) print*, achar(9), "starting reading dat file ", nn, "/3", achar(9), "..."
        if(rank == 0) then
           global_cx = cmplx(0.0_pr)
           do j3 = 1, n_pre(3)
@@ -158,7 +158,7 @@ CONTAINS
                 do j1 = 1, n_pre(1)/2+1
                    read(filehandle, "(2 G20.12)", iostat=ios) val1, val2
                    if(ios < 0) then
-                     print*, "error reading file: 0 /= iostat =", ios, "at j1=",j1
+                     print*, achar(9), "error reading file: 0 /= iostat =", ios, "at j1=",j1
                      errorIndicator = .true.
                      exit
                    end if
@@ -169,19 +169,20 @@ CONTAINS
                    global_cx(j1,jj2,jj3) = cmplx(val1, val2)
                 end do
                 if(ios < 0) then
-                  print*, "error reading file: 0 /= iostat =", ios, "at j2=",j2
+                  print*, achar(9), "error reading file: 0 /= iostat =", ios, "at j2=",j2
                   errorIndicator = .true.
                   exit
                 end if
              end do
              if(ios < 0) then
-               print*, "error reading file: 0 /= iostat =", ios, "at j3=",j3
+               print*, achar(9), "error reading file: 0 /= iostat =", ios, "at j3=",j3
                errorIndicator = .true.
                exit
              end if
           end do
        end if
        CALL MPI_BARRIER(MPI_COMM_WORLD, Statinfo)
+       if(rank==0) print*, achar(9), achar(9), "done"
        call MPI_Scatter(global_cx(:,:,:), local_count, MPI_DOUBLE_COMPLEX, temp1_function_cx, local_count, MPI_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD, Statinfo)
        call fftbwd(temp1_function_cx, uvecRefined(:,:,:,nn))
     end do
@@ -189,7 +190,7 @@ CONTAINS
     if (rank == 0) then
        close(filehandle)
        deallocate(global_cx)
-       print *, "initail_data_refine OK!"
+       print *, achar(9), "initial_data_refine OK!"
     end if
     
     CALL MPI_BARRIER(MPI_COMM_WORLD, Statinfo)

@@ -44,8 +44,8 @@ PROGRAM main
 
 
 
-   filename_initial = "u_result_0613_q4_B026_iter0800"          ! without folderpath or .nc
-   res_pre = 256
+   filename_initial = "u_result_0724_q3_B012_iter0100"          ! without folderpath or .nc
+   res_pre = 512
 
 
 
@@ -73,6 +73,8 @@ PROGRAM main
       
          if(rank==0) print*, "n(:)", n(:)
       
+
+         if(rank==0) print*, "reading ..."
          CALL read_field_R3toR3_ncdf(UvecPre, "./"//filename_initial//".nc", "Ux", "Uy", "Uz")
 
          call mpi_barrier(mpi_comm_world, statinfo)
@@ -86,21 +88,25 @@ PROGRAM main
       
          
          call mpi_barrier(mpi_comm_world, statinfo)
-         if(rank==0) print*, "read done"
+         if(rank==0) print*, achar(9), "done"
          
          !CALL save_field_R3toR3_ncdf(UvecPre(:,:,:,1), UvecPre(:,:,:,2), UvecPre(:,:,:,3), "Ux", "Uy", "Uz", "./"//filename_initial//"_ie.nc", "netCDF")
       
          !if(rank==0) print*, "save done"
          
+         if(rank==0) print*, "fourier ..."
          allocate( fuPre(1:n(1)/2+1,1:n(2),1:local_N, 1:3) )
          DO nn = 1,3
             call fftfwd(uvecPre(:,:,:,nn), fuPre(:,:,:,nn))
          END DO
          
          call mpi_barrier(mpi_comm_world, statinfo)
-         if(rank==0) print*, "fourier done"
+         if(rank==0) print*, achar(9), "done"
          
+         if(rank==0) print*, "saving dat file ..."
          call save_velocity_cx(fuPre, "./"//filename_initial//"_cx.dat")
+         call mpi_barrier(mpi_comm_world, statinfo)
+         if(rank==0) print*, achar(9), "done"
          
          deallocate( UvecPre )
          if (rank==0) deallocate( global_u )
@@ -137,22 +143,24 @@ PROGRAM main
          if(rank==0) print*, "n(:)", n(:)
 
 
+         if(rank==0) print*, "startin ic_refine ..."
          call initial_condition_refine((/res_pre, res_pre, res_pre/), "./"//filename_initial//"_cx.dat")
-
          call mpi_barrier(mpi_comm_world, statinfo)
-         if(rank==0) print*, "ic_refine done"
+         if(rank==0) print*, achar(9), "ic_refine done"
 
-         if(rank==0) print*, "UvecRefined(1,2,1,1)", UvecRefined(1,2,1,1), "UvecRefined(3,2,1,3)", UvecRefined(3,2,1,3), "UvecRefined(2,2,2,2)", UvecRefined(2,2,2,2)
+         !if(rank==0) print*, "UvecRefined(1,2,1,1)", UvecRefined(1,2,1,1), "UvecRefined(3,2,1,3)", UvecRefined(3,2,1,3), "UvecRefined(2,2,2,2)", UvecRefined(2,2,2,2)
          
+         if(rank==0) print*, "saving nc file"
          CALL save_field_R3toR3_ncdf(UvecRefined(:,:,:,1), UvecRefined(:,:,:,2), UvecRefined(:,:,:,3), "Ux", "Uy", "Uz", "./"//filename_initial//"_refined"//fb_int_to_str(res_pre)//"->"//fb_int_to_str(res_refined)//".nc", "netCDF")
-         if(rank==0) print*, "save_ref done"
+         call mpi_barrier(mpi_comm_world, statinfo)
+         if(rank==0) print*, achar(9), "done"
 
-
+         if(rank==0) print*, "deleting dat file"
          if(rank==0 .and. .not.errorIndicator) then
             open(unit=1234, iostat=deleteStat, file="./"//filename_initial//"_cx.dat", status='old')
             if (deleteStat == 0) then
                close(1234, status='delete')
-               print*, "deleting temporary file done"
+               print*, achar(9), "done"
             else
                errorIndicator = .true.
             end if
