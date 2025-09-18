@@ -25,6 +25,9 @@ PROGRAM main
    COMPLEX(pr), DIMENSION (:,:,:,:), ALLOCATABLE :: fuPre
    integer :: res, res_pre, res_refined, nn, step, deleteStat
 
+   integer :: startIndex, endIndex
+   character(len=:), allocatable :: tempString1, tempString2
+
    
 
 
@@ -41,17 +44,30 @@ PROGRAM main
 
 
 
-
-
-
-   filename_initial = "u_result_0724_q3_B012_iter0100"          ! without folderpath or .nc
-   res_pre = 512
-
-
+   !!! instrucitons https://github.com/uniFabiB/refinement#readme
+   ! basically
+   !  salloc --time=0-0:30 --mem-per-cpu=1800M --ntasks=16 --account=rrg-bprotas
+   !  change filename_initial
+   !  make clean; make; srun
 
 
 
 
+   filename_initial = "u_result_q4_n512_B020_iterend"          ! without folderpath or .nc
+
+
+
+
+
+
+
+   ! extract resolution value: for filename_initial = "u_result_q5_n256_B014_iterend" >> res_pre = 256
+   startIndex = index(filename_initial,'_n')   ! first occurance
+   tempString1 = filename_initial(startIndex+2:)
+   endIndex = index(tempString1,"_")
+   tempString2 = tempString1(:endIndex-1)
+   read(tempString2,*) res_pre
+   if(rank==0) print*, "assigned res_pre=", res_pre
 
    res_refined = res_pre * 2
    do step = 1,2
@@ -143,7 +159,7 @@ PROGRAM main
          if(rank==0) print*, "n(:)", n(:)
 
 
-         if(rank==0) print*, "startin ic_refine ..."
+         if(rank==0) print*, "starting ic_refine ..."
          call initial_condition_refine((/res_pre, res_pre, res_pre/), "./"//filename_initial//"_cx.dat")
          call mpi_barrier(mpi_comm_world, statinfo)
          if(rank==0) print*, achar(9), "ic_refine done"

@@ -150,7 +150,7 @@ CONTAINS
     
     if(rank==0) print*, achar(9), "lines in file", 3*n_pre(3)*n_pre(2)*(n_pre(1)/2+1)
     do nn = 1,3
-      if(rank==0) print*, achar(9), "starting reading dat file ", nn, "/3", achar(9), "..."
+      if(rank==0) print*, achar(9), "start reading dat file", nn, "/3", achar(9), "..."
        if(rank == 0) then
           global_cx = cmplx(0.0_pr)
           do j3 = 1, n_pre(3)
