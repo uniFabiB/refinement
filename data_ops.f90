@@ -240,6 +240,8 @@ MODULE data_ops
 
           INTEGER, DIMENSION(1:3) :: starts, counts
 
+
+          if(rank==0) print*, "       ", filename
           
           
           IF (parallel_data) THEN
@@ -456,12 +458,14 @@ MODULE data_ops
           INTEGER, INTENT(IN) :: nerror
           CHARACTER(80) :: error_string
           CHARACTER(2) :: K0txt, E0txt
+          
+          print*, "PROBABLY FILE FOR ", filename_initial, " NOT FOUND, CHECK FILENAME IN REFINE.F90"
  
           error_string = NF90_STRERROR(nerror)
- 
-          OPEN(10, FILE="./LOGFILES/maxET_info.log", STATUS='OLD', POSITION='APPEND')
-          WRITE(10,*) " Error reading netCDF file. "//error_string
-          CLOSE(10)
+          
+          print*, error_string
+          
+          stop 1
   
         END SUBROUTINE ncdf_error_handle
 

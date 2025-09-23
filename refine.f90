@@ -53,7 +53,8 @@ PROGRAM main
 
 
 
-   filename_initial = "u_result_q4_n512_B020_iterend"          ! without folderpath or .nc
+   filename_initial = "u_result_q4_n512_B018_iterend.nc"          ! without folderpath
+   								  ! .nc does not matter
 
 
 
@@ -91,6 +92,9 @@ PROGRAM main
       
 
          if(rank==0) print*, "reading ..."
+         if(filename_initial(len(filename_initial)-2:len(filename_initial)) == ".nc") then
+            filename_initial = filename_initial(1:len(filename_initial)-3)
+         end if
          CALL read_field_R3toR3_ncdf(UvecPre, "./"//filename_initial//".nc", "Ux", "Uy", "Uz")
 
          call mpi_barrier(mpi_comm_world, statinfo)
